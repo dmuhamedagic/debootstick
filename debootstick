@@ -290,7 +290,6 @@ release_image draft     # not needed anymore
 cat > $final_rootfs_mountpoint/dbstck.conf << EOF
 STICK_OS_ID=$STICK_OS_ID
 USE_LVM=$(target_use_lvm)
-SYSTEM_TYPE=$system_type
 ASK_ROOT_PASSWORD_ON_FIRST_BOOT=$root_password_on_first_boot
 BOOTLOADER_INSTALL=$bootloader_install_command
 EOF

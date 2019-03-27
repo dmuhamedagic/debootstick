@@ -27,12 +27,7 @@ then
 fi
 
 # run initialization script
-if [ "$SYSTEM_TYPE" = "installer" ]
-then
-    $INIT_SCRIPTS_DIR/migrate-to-disk.sh
-else    # 'live' mode
-    $INIT_SCRIPTS_DIR/occupy-space.sh
-fi
+$INIT_SCRIPTS_DIR/occupy-space.sh
 
 # restore the lvm config as it was in the
 # initial chroot environment
