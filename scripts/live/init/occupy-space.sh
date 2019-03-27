@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
-THIS_DIR=$(cd $(dirname $0); pwd)
-. $THIS_DIR/tools.sh
+LIVE_SCRIPTS_DIR=/opt/debootstick
+. $LIVE_SCRIPTS_DIR/tools.sh
 . /dbstck.conf      # get LVM_VG
 
 # find device currently being booted

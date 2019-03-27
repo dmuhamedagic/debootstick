@@ -1,9 +1,10 @@
 #!/bin/bash
 # bash is needed for proper handling of password prompt.
 set -e
-INIT_SCRIPTS_DIR=/opt/debootstick/live/init
+LIVE_SCRIPTS_DIR=/opt/debootstick
+INIT_SCRIPTS_DIR=$LIVE_SCRIPTS_DIR/init
 . /dbstck.conf                  # for config values
-. $INIT_SCRIPTS_DIR/tools.sh    # for functions
+. $LIVE_SCRIPTS_DIR/tools.sh    # for functions
 
 # if error, run a shell
 trap '[ "$?" -eq 0 ] || fallback_sh' EXIT

@@ -226,8 +226,8 @@ optional_target_prepare_rootfs draft outside
 # 2nd level of checks of input file hierarchy
 check_fs_hierarchy "$PWD" 2 || exit 1
 
-mkdir -p opt/debootstick
-cp -a $DBSTCK_DIR/scripts/live opt/debootstick/live
+mkdir -p opt
+cp -a $DBSTCK_DIR/scripts/live opt/debootstick
 cp -a $DBSTCK_DIR/scripts/create-image/chrooted-customization-draft.sh .
 # we will need internet connectivity for package
 # management in the chroot. Ensure we have a valid DNS setup there.
