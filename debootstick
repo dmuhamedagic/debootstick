@@ -144,13 +144,9 @@ fi
 
 if [ "$system_type" = "installer" ]
 then
-    if [ -z "$bootloader_install_command" ] || ! $(target_use_lvm)
-    then
-        # cannot use installer mode if target does not use LVM or does not
-        # specify a bootloader installation procedure.
-        echo "Sorry, this target does not support installer system type." >&2
-        exit 1
-    fi
+    echo "Sorry, '--system-type' option is obsolete." >&2
+    echo "See section 'INSTALLATION MEDIA' of the man page." >&2
+    exit 1
 fi
 
 # if we are here, command line is ok :)
