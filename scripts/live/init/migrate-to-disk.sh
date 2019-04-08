@@ -150,6 +150,21 @@ enforce_lvm_cmd() {
     sgdisk -G ${TARGET}
 
     echo MSG extending the last partition...
+    # create additional VGs
+    n=$pv_part_num
+    for vg in $EXTRA_VGS; do
+        vgname=$(echo $vg | awk -F: '{print $1}')
+        size=$(echo $vg | awk -F: '{print $2}')
+        n=$((n+1))
+        sgdisk -n $n:0:+${size}G -t $n:8e00 ${TARGET}
+        part_target=$(get_part_device ${TARGET} $n)
+        echo MSG Creating VG $vgname on $part_target
+        yes | pvcreate -ff $part_target
+        udevadm settle
+        vgcreate --yes $vgname $part_target
+    done
+
+    echo MSG extending the ROOT VG partition...
     sgdisk -d $pv_part_num -n $pv_part_num:0:0 \
                 -t $pv_part_num:8e00 ${TARGET}
 
@@ -185,6 +200,30 @@ enforce_lvm_cmd() {
         LVM_VG=$FINAL_VGNAME
     fi
     echo REFRESHING_DONE
+
+    # create additional LVs
+    (
+    for lv in $EXTRA_LVS; do
+        IFS=":"
+        set -- $lv
+        if vgs $1 >/dev/null 2>&1; then
+            echo MSG "Creating LV $2 in VG $1 (mount point: $4)"
+        else
+            echo MSG "Not creating LV $2 (VG $1 doesn't exist)"
+            continue
+        fi
+        # for whatever reason, zeroing the LV fails with the
+        # message:
+        # /dev/vg/blah: not found: device not cleared
+        # hence "-Z n"
+        lvcreate --yes -Z n -n $2 -L $3G $1
+        udevadm settle
+        mkdir -p $4
+        mkfs.ext4 -F -q -L $2 /dev/$1/$2
+        mount /dev/$1/$2 $4
+        echo "LABEL=$2 $4 ext4 errors=remount-ro 0 1" >> /etc/fstab
+    done
+    )
 
     echo MSG filling the space available...
     : ${ROOT_SHARE:="100"}
