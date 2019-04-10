@@ -64,11 +64,13 @@ target_label=$(get_device_label $TARGET)
 
 echo "** About to start migration!"
 echo "** $origin_label --> $target_label"
-echo
-echo "** WARNING: Any existing data on target disk will be lost."
-echo "** WARNING: Press any key NOW to cancel this process."
-read -t 10 -n 1 && { echo "Aborted!"; exit 1; }
-echo "** Going on."
+if [ -z "$NO_DISK_WARNING" ]; then
+    echo
+    echo "** WARNING: Any existing data on target disk will be lost."
+    echo "** WARNING: Press any key NOW to cancel this process."
+    read -t 10 -n 1 && { echo "Aborted!"; exit 1; }
+    echo "** Going on."
+fi
 
 enforce_lvm_cmd() {
     local cmd i
