@@ -159,7 +159,8 @@ enforce_lvm_cmd() {
     echo REFRESHING_DONE
 
     echo MSG filling the space available...
-    lvextend -l+100%FREE /dev/$LVM_VG/ROOT
+    : ${ROOT_SHARE:="100"}
+    lvextend -l+${ROOT_SHARE}%FREE /dev/$LVM_VG/ROOT
     resize2fs /dev/$LVM_VG/ROOT
 
     echo MSG installing the bootloader...
