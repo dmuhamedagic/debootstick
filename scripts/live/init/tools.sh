@@ -48,7 +48,7 @@ show_progress_bar()
 
 disk_partitions()
 {
-    lsblk -lno NAME,TYPE | grep -w disk | while read disk_name type
+    lsblk -lno NAME,TYPE $1 | grep -w disk | while read disk_name type
     do
         disk="/dev/$disk_name"
         lsblk -lno NAME,TYPE $disk | grep -w part | while read part_name type
@@ -70,7 +70,7 @@ get_part_device()
 {
     disk=$1
     part_num=$2
-    set -- $(disk_partitions | grep -w "$disk" | grep "$part_num$")
+    set -- $(disk_partitions "$disk" | grep "$part_num$")
     echo $2
 }
 
@@ -133,8 +133,7 @@ part_types()
 
 get_pv_part_num()
 {
-    set -- $(part_types "$1" | grep "$MATCH_LVM_PV")
-    echo $1
+    part_types "$1" | grep "$MATCH_LVM_PV" | awk '{print $1}'
 }
 
 get_part_nums_not_pv()
