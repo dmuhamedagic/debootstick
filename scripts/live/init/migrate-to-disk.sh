@@ -4,6 +4,34 @@ THIS_DIR=$(cd $(dirname $0); pwd)
 . $THIS_DIR/tools.sh
 . /dbstck.conf
 
+# output the percentage of the VG for the rootfs
+# we adapt the desired share size to the actual size of the vg
+# if the share is smaller than the minimum size, we calculate the
+# share which is minimum size
+calc_share() {
+    local free
+    free="$(vgs -o vg_free --noheadings --units G --nosuffix $2)"
+
+    echo inp: "$1" "$2"
+    echo "$1" |
+    awk -v free="$free" '
+    {
+        n = split($1, a, ":");
+        desired_share = a[1]/100.0;
+        if (n == 2)
+            min_size = a[2];
+        else
+            min_size = 0;
+        size = free*desired_share;
+        if (size < min_size)
+            size = min_size;
+        if (size > free)
+            size = free;
+    }
+    END{print int(100*(size/free))}
+    '
+}
+
 clear
 echo "** ---- INSTALLER MODE -------------------"
 if ! $USE_LVM
@@ -160,7 +188,8 @@ enforce_lvm_cmd() {
 
     echo MSG filling the space available...
     : ${ROOT_SHARE:="100"}
-    lvextend -l+${ROOT_SHARE}%FREE /dev/$LVM_VG/ROOT
+    root_share=`calc_share $ROOT_SHARE $LVM_VG`
+    lvextend -l+${root_share}%FREE /dev/$LVM_VG/ROOT
     resize2fs /dev/$LVM_VG/ROOT
 
     echo MSG installing the bootloader...
