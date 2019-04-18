@@ -8,13 +8,26 @@ THIS_DIR=$(cd $(dirname $0); pwd)
 # we adapt the desired share size to the actual size of the vg
 # if the share is smaller than the minimum size, we calculate the
 # share which is minimum size
-calc_share() {
-    local free
-    free="$(vgs -o vg_free --noheadings --units G --nosuffix $2)"
-
-    echo inp: "$1" "$2"
+vg_free() {
+    vgs -o vg_free --noheadings --units G --nosuffix $1
+}
+blkdev_free() {
+    lsblk -bndlo SIZE $1 | awk '{print $1/1024.0/1024.0/1024.0}'
+}
+calc_size() {
+    local size dev as_pct
+    dev="$2"
+	as_pct="$3"
+    free=$(case "$dev" in
+        [A-Za-z]*) vg_free $dev ;;
+        /dev/*) blkdev_free $dev ;;
+        [0-9][0-9.]*) echo $dev ;;
+        *) echo "** ERROR: from $dev cannot calculate the share size" 2>&1
+			echo 1
+			;;
+    esac)
     echo "$1" |
-    awk -v free="$free" '
+    awk -v as_pct="$as_pct" -v free="$free" '
     {
         n = split($1, a, ":");
         desired_share = a[1]/100.0;
@@ -28,8 +41,14 @@ calc_share() {
         if (size > free)
             size = free;
     }
-    END{print int(100*(size/free))}
-    '
+	END{if (as_pct == "")
+			print size;
+		else
+			print int(100*(size/free));
+	}'
+}
+calc_share() {
+	calc_size $@ 1
 }
 
 clear
@@ -152,9 +171,10 @@ enforce_lvm_cmd() {
     echo MSG extending the last partition...
     # create additional VGs
     n=$pv_part_num
+    free=$(blkdev_free ${TARGET})
     for vg in $EXTRA_VGS; do
         vgname=$(echo $vg | awk -F: '{print $1}')
-        size=$(echo $vg | awk -F: '{print $2}')
+        size=$(calc_size "$2" $free)
         n=$((n+1))
         sgdisk -n $n:0:+${size}G -t $n:8e00 ${TARGET}
         part_target=$(get_part_device ${TARGET} $n)
@@ -203,6 +223,12 @@ enforce_lvm_cmd() {
 
     # create additional LVs
     (
+    vg_free_f=`mktemp`
+    (for lv in $EXTRA_LVS; do
+        IFS=":"
+        set -- $lv
+        echo $1 $(vg_free $1)
+    done) > $vg_free_f
     for lv in $EXTRA_LVS; do
         IFS=":"
         set -- $lv
@@ -212,22 +238,24 @@ enforce_lvm_cmd() {
             echo MSG "Not creating LV $2 (VG $1 doesn't exist)"
             continue
         fi
+        lv_size=$(calc_size $3 $(grep -w "^$1" $vg_free_f | awk '{print $2}'))
         # for whatever reason, zeroing the LV fails with the
         # message:
         # /dev/vg/blah: not found: device not cleared
         # hence "-Z n"
-        lvcreate --yes -Z n -n $2 -L $3G $1
+        lvcreate --yes -Z n -n $2 -L ${lv_size}G $1
         udevadm settle
         mkdir -p $4
         mkfs.ext4 -F -q -L $2 /dev/$1/$2
         mount /dev/$1/$2 $4
         echo "LABEL=$2 $4 ext4 errors=remount-ro 0 1" >> /etc/fstab
     done
+    rm -f $vg_free_f
     )
 
     echo MSG filling the space available...
     : ${ROOT_SHARE:="100"}
-    root_share=`calc_share $ROOT_SHARE $LVM_VG`
+    root_share=$(calc_share $ROOT_SHARE $LVM_VG)
     lvextend -l+${root_share}%FREE /dev/$LVM_VG/ROOT
     resize2fs /dev/$LVM_VG/ROOT
 
