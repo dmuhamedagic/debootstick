@@ -21,6 +21,7 @@ config_grub_on_serial_line=0
 system_type="live"
 kernel_bootargs=""
 config_hostname=""
+config_vgname=""
 chroot_in=""
 image_out=""
 
@@ -62,6 +63,10 @@ parse_args()
             ;;
             --config-hostname)
                 config_hostname="$2"
+                shift 2
+            ;;
+            --config-vgname)
+                config_vgname="$2"
                 shift 2
             ;;
             --config-grub-on-serial-line)
@@ -246,6 +251,7 @@ with mount -o bind /etc/resolv.conf $PWD/etc/resolv.conf; do
                 kernel_package="\"$kernel_package\""    \
                 kernel_bootargs="\"$kernel_bootargs\"" \
                 config_hostname="\"$config_hostname\""
+                config_vgname="$config_vgname"
     done
 done
 rm ./chrooted-customization-draft.sh
@@ -294,6 +300,7 @@ release_image draft     # not needed anymore
 cat >> $final_rootfs_mountpoint/dbstck.conf << EOF
 STICK_OS_ID=$STICK_OS_ID
 USE_LVM=$(target_use_lvm)
+FINAL_VGNAME=$config_vgname
 SYSTEM_TYPE=$system_type
 ASK_ROOT_PASSWORD_ON_FIRST_BOOT=$root_password_on_first_boot
 BOOTLOADER_INSTALL=$bootloader_install_command

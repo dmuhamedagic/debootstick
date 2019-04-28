@@ -72,6 +72,24 @@ if [ -z "$NO_DISK_WARNING" ]; then
     echo "** Going on."
 fi
 
+# this is a dreadful kludge, but no idea how else to
+# solve the issue
+# namely, after vgrename the mount table is not updated
+# and still contains the previous VG name in the device
+# path for the rootfs
+grub_vgrename_kludge() {
+    local vg=$FINAL_VGNAME
+    local target=$TARGET
+    local dir=/newroot
+    sed -i "s,root=/dev/mapper/DBSTCK[^ ]*,root=/dev/$vg/ROOT," /boot/grub/grub.cfg
+    mkdir $dir
+    sync;sync;sync
+    mount /dev/$vg/ROOT $dir
+    $BOOTLOADER_INSTALL -s --boot-directory=$dir $target
+    umount $dir
+    rmdir $dir
+}
+
 enforce_lvm_cmd() {
     local cmd i
     cmd="$*"
@@ -132,6 +150,12 @@ enforce_lvm_cmd() {
     done
     udevadm settle
     vgreduce $LVM_VG $part_origin
+    udevadm settle
+    if [ -n "$FINAL_VGNAME" ]; then
+        vgrename $LVM_VG $FINAL_VGNAME
+        udevadm settle
+        LVM_VG=$FINAL_VGNAME
+    fi
     echo REFRESHING_DONE
 
     echo MSG filling the space available...
@@ -139,7 +163,11 @@ enforce_lvm_cmd() {
     resize2fs /dev/$LVM_VG/ROOT
 
     echo MSG installing the bootloader...
-    $BOOTLOADER_INSTALL ${TARGET}
+    if [ -n "$FINAL_VGNAME" ]; then
+        grub_vgrename_kludge /dev/$FINAL_VGNAME/ROOT $TARGET
+    else
+        $BOOTLOADER_INSTALL ${TARGET}
+    fi
 
     echo MSG making sure ${ORIGIN} is not used anymore...
     enforce_lvm_cmd pvremove -ff -y $part_origin
