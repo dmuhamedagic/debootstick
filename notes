@@ -1,0 +1,22 @@
+Send email with patches/work desc
+
+****
+
+System filesystems/partitions/LVs
+
+Use LVs within the system VG
+
+1. Use the same mechanism, replace /sbin/init with a script:
+
+- during image creation: archive the content into a file
+- during the boot:
+- create LV
+- create FS
+- move the content from the rootfs to the new FS
+- edit /etc/fstab
+
+
+- create LV
+- create FS
+- move the content from the rootfs to the new FS
+- edit /etc/fstab
