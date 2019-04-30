@@ -1,3 +1,9 @@
+debootstick (2.2.1) unstable; urgency=medium
+
+  * Nerve changes
+
+ -- Dejan Muhamedagic <dejanmm@fastmail.fm>  Tue, 30 Apr 2019 15:44:26 +0200
+
 debootstick (2.2) unstable; urgency=medium
 
   * Fix new LVM versions hanging in chroot (closes: Bug#923852).

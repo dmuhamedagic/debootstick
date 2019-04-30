@@ -1,7 +1,7 @@
 Source: debootstick
 Section: admin
 Priority: optional
-Maintainer: Etienne Dublé <etienne.duble@gmail.com>
+Maintainer: Dejan Muhamedagic <dejanmm@fastmail.fm>
 Build-Depends: debhelper (>= 11)
 Standards-Version: 4.3.0
 Homepage: http://drakkar-lig.github.io/debootstick
