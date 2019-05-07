@@ -22,9 +22,11 @@ enforce_lvm_cmd() {
     local cmd i
     cmd="$*"
     for i in 1 2 3; do
-        # this fails occasionally; there must be a reason, but
-        # heaven knows which it is
-        $cmd && break
+        # some disk related programs fail occasionally, it seems
+        # to be a timing issue; there must be a reason, but
+        # heaven knows which it is, so let's just retry
+        # some commands need to be told "y"
+        yes | $cmd && break
         sleep 1
     done
 }

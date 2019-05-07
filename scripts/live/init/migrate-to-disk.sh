@@ -85,7 +85,7 @@ fi
             vgchange -an $vg
             vgremove -ff -y $vg
         fi
-        enforce_lvm_cmd pvremove -ff -y $part_target
+        enforce_lvm_cmd pvremove -ff $part_target
     done
 
     echo MSG copying the partition scheme...
@@ -104,7 +104,7 @@ fi
         sgdisk -n $n:0:+${size}G -t $n:8e00 ${TARGET}
         part_target=$(get_part_device ${TARGET} $n)
         echo MSG Creating VG $vgname on $part_target
-        enforce_lvm_cmd pvcreate -ff -y $part_target
+        enforce_lvm_cmd pvcreate -ff $part_target
         udevadm settle
         vgcreate --yes $vgname $part_target
     done
@@ -128,7 +128,7 @@ fi
     echo MSG moving the lvm volume content on ${TARGET}...
     part_origin=$(get_part_device ${ORIGIN} $pv_part_num)
     part_target=$(get_part_device ${TARGET} $pv_part_num)
-    enforce_lvm_cmd pvcreate -ff -y $part_target
+    enforce_lvm_cmd pvcreate -ff $part_target
     udevadm settle
     vgextend $LVM_VG $part_target
     pvchange -x n $part_origin
@@ -192,7 +192,7 @@ fi
     fi
 
     echo MSG making sure ${ORIGIN} is not used anymore...
-    enforce_lvm_cmd pvremove -ff -y $part_origin
+    enforce_lvm_cmd pvremove -ff $part_origin
     sync; sync
     enforce_lvm_cmd partx -d ${ORIGIN}
 
