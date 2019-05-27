@@ -22,6 +22,9 @@ first_init()
         (first_init)    # execute in a sub-shell
         # restore original getty
         mv "${GETTY_COMMAND}.orig" "$GETTY_COMMAND"
+		# reboot after the migration
+		[ "$SYSTEM_TYPE" = "installer" ] &&
+			reboot
     fi
 } 200>/var/lib/debootstick-init.lock
 
