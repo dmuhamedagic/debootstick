@@ -149,10 +149,12 @@ get_next_part_num()
 
 get_higher_capacity_devices()
 {
+	local eligible_majors
+	eligible_majors="8 259"
     threshold=$1
     cat /proc/partitions | while read major minor size name
     do
-        if [ "$major" = "8" ]
+        if echo $eligible_majors | grep -qsw "$major"
         then
             if [ "$((minor % 16))" -eq 0 -a $((size*1024)) -gt $threshold ]
             then
