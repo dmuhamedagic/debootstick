@@ -1,3 +1,10 @@
+debootstick (2.2.1+nmu3) UNRELEASED; urgency=medium
+
+  * Non-maintainer upload.
+  * fix for the fix (syntax error)
+
+ -- Dejan Muhamedagic <muhamedagic@capote>  Thu, 06 Jun 2019 12:25:48 +0200
+
 debootstick (2.2.1+nmu2) UNRELEASED; urgency=medium
 
   * Non-maintainer upload.
