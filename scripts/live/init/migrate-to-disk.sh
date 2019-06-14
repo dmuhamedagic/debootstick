@@ -37,21 +37,21 @@ then
 fi
 
 origin_capacity=$(get_device_capacity $ORIGIN)
-larger_devices="$(get_higher_capacity_devices $origin_capacity)"
+eligible_devices="$(get_eligible_devices $ORIGIN)"
 
-if [ "$larger_devices" = "" ]
+if [ "$eligible_devices" = "" ]
 then
     echo "Error: no device larger than the one currently booted was detected." >&2
     echo "Aborted!"
     exit 1
 fi
 
-if [ $(echo "$larger_devices" | wc -l) -eq 1 ]
+if [ $(echo "$eligible_devices" | wc -l) -eq 1 ]
 then
-    TARGET=$larger_devices
+    TARGET=$eligible_devices
 else
     menu_input="$(
-        for device in $larger_devices
+        for device in $eligible_devices
         do       # item  # item description
             echo $device "$device: $(get_device_label $device)"
         done)"

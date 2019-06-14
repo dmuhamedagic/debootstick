@@ -1,3 +1,17 @@
+debootstick (2.4+nmu3) UNRELEASED; urgency=medium
+
+  * Non-maintainer upload.
+  * eligible devices are all non-hotplug disks
+
+ -- Dejan Muhamedagic <dejanmm@fastmail.fm>  Fri, 14 Jun 2019 15:14:53 +0200
+
+debootstick (2.4+nmu2) UNRELEASED; urgency=medium
+
+  * Non-maintainer upload.
+  * update version to 2.4+nmu2
+
+ -- Dejan Muhamedagic <dejamm@fastmail.fm>  Thu, 13 Jun 2019 17:25:04 +0200
+
 debootstick (2.2.1+nmu3) UNRELEASED; urgency=medium
 
   * Non-maintainer upload.

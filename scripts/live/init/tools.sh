@@ -147,19 +147,13 @@ get_next_part_num()
     echo $(($1+1))
 }
 
-get_higher_capacity_devices()
+get_eligible_devices()
 {
-	local eligible_majors
-	eligible_majors="8 259"
-    threshold=$1
-    cat /proc/partitions | while read major minor size name
-    do
-        if echo $eligible_majors | grep -qsw "$major"
-        then
-            if [ "$((minor % 16))" -eq 0 -a $((size*1024)) -gt $threshold ]
-            then
-                echo /dev/$name
-            fi
+	eligible_tran="sata nvme"
+	lsblk -n -d -o TRAN,HOTPLUG,NAME |
+		while read tran hotplug name; do
+        if echo $eligible_tran | grep -qsw "$tran"; then
+			echo /dev/$name
         fi
     done
 }
