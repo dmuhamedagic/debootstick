@@ -82,8 +82,15 @@ fi
             continue
         vg=$(vgs --select "pv_name = $part_target" --noheadings | awk '{print $1}')
         if [ -n "$vg" ]; then
-            vgchange -an $vg
-            vgremove -ff -y $vg
+			set +e
+            if ! vgchange -an $vg || ! vgremove -ff -y $vg
+			then
+				echo MSG failed to remove the $vg VG, wiping the $part_target partition...
+				dd_min_verbose if=/dev/zero of=$part_target bs=10M count=1
+				echo MSG please reboot and try again
+				exit 1
+			fi
+			set -e
         fi
         enforce_lvm_cmd pvremove -ff $part_target
     done
