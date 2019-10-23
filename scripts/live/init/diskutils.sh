@@ -42,6 +42,9 @@ vg_free() {
 blkdev_free() {
     lsblk -bndlo SIZE $1 | awk '{print $1/1024.0/1024.0/1024.0}'
 }
+# $1: desired_size (percentage of the vg[,min size in gb]; e.g. "10,25")
+# $2: device or size (if device, then its size is retrieved)
+# $3: as_pct (output percentage rather than absolute size)
 calc_size() {
     local size dev as_pct
     dev="$2"
@@ -57,7 +60,7 @@ calc_size() {
     echo "$1" |
     awk -v as_pct="$as_pct" -v free="$free" '
     {
-        n = split($1, a, ":");
+        n = split($1, a, ",");
         desired_share = a[1]/100.0;
         if (n == 2)
             min_size = a[2];
@@ -70,7 +73,7 @@ calc_size() {
             size = free;
     }
     END{if (as_pct == "")
-            print size;
+            print int(size);
         else
             print int(100*(size/free));
     }'

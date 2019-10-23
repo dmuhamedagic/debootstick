@@ -159,18 +159,22 @@ fi
     (for lv in $EXTRA_LVS; do
         IFS=":"
         set -- $lv
-        echo $1 $(vg_free $1)
-    done) > $vg_free_f
+        echo $1
+    done | sort -u |
+	while read vg; do
+        echo $vg $(vg_free $vg)
+	done) > $vg_free_f
     for lv in $EXTRA_LVS; do
         IFS=":"
         set -- $lv
-        if vgs $1 >/dev/null 2>&1; then
+        free=$(grep "^$1 " $vg_free_f | awk '{print $2}')
+        if [ -n "$free" ]; then
             echo MSG "Creating LV $2 in VG $1 (mount point: $4)"
         else
             echo MSG "Not creating LV $2 (VG $1 doesn't exist)"
             continue
         fi
-        lv_size=$(calc_size $3 $(grep -w "^$1" $vg_free_f | awk '{print $2}'))
+        lv_size=$(calc_size $3 $free)
         # for whatever reason, zeroing the LV fails with the
         # message:
         # /dev/vg/blah: not found: device not cleared
